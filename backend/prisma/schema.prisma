@@ -1,0 +1,46 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  displayName    String
+  username       String   @unique
+  email          String   @unique
+  password       String?
+  bio            String?  @default("Hello World")
+  profilePicture String?
+  bannerPicture  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  tweets         Tweet[]
+  likes          Tweet[]  @relation("likes")
+  followers      User[]   @relation("userFollows")
+  followings     User[]   @relation("userFollows")
+
+  @@index([id, username])
+  @@map("users")
+}
+
+model Tweet {
+  id        String   @id @default(uuid())
+  content   String?
+  images    String[]
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  reply     Tweet?   @relation("replies", fields: [replyId], references: [id])
+  replyId   String?
+  replies   Tweet[]  @relation("replies")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  likes     User[]   @relation("likes")
+
+  @@index([id, userId])
+  @@map("tweets")
+}
